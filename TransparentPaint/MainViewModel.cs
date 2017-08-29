@@ -133,7 +133,6 @@ namespace Hellosam.Net.TransparentPaint
             if (!IsInDesignMode)
             {
                 Application.Current.Dispatcher.InvokeAsync(RenderTask, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
-                OnCloneWindow();
             }
         }
 
@@ -250,27 +249,44 @@ namespace Hellosam.Net.TransparentPaint
         internal void SetCanvas(InkCanvas canvas)
         {
             if (Canvas != null)
-            {
-                Canvas.StrokeCollected -= Canvas_StrokeCollected;
-                Canvas.StrokeErased -= Canvas_StrokeErased;
-            }
+                throw new InvalidOperationException("Canvas has been set already");
+
             Canvas = canvas;
             canvas.StrokeCollected += Canvas_StrokeCollected;
             canvas.StrokeErased += Canvas_StrokeErased;
+            canvas.MouseDown += Canvas_MouseDown;
+            canvas.MouseMove += Canvas_MouseMove;
+            canvas.MouseUp += Canvas_MouseUp;
+        }
+        
+        private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.MouseDevice.Capture((UIElement)sender);
+            Render(Canvas);
+        }
+        private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            e.MouseDevice.Capture(null);
+        }
+
+        private void Canvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.MouseDevice.Captured == (UIElement)sender)
+            {
+                Render(Canvas);
+            }
         }
 
         private void Canvas_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {
-            Render((UIElement)sender);
-            Render((UIElement)sender);
+            Render(Canvas);
         }
 
         private void Canvas_StrokeErased(object sender, RoutedEventArgs e)
         {
-            Render((UIElement)sender);
-            Render((UIElement)sender);
+            Render(Canvas);
+            Render(Canvas);
         }
-
 
         private async void OnRestart()
         {
@@ -369,6 +385,7 @@ namespace Hellosam.Net.TransparentPaint
                     pngEncoder.Save(ms);
                     _server?.Publish(new BinaryPayload("image/png", ms.ToArray()));
                 }
+                await Task.Delay(50);
             }
         }
 

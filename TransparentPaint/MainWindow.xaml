@@ -15,6 +15,7 @@
         <KeyBinding Key="F1" Command="{Binding ClearInkCommand}" />
         <KeyBinding Key="F2" Command="{Binding UndoCommand}" />
         <KeyBinding Key="F6" Command="{Binding ToggleSnapCommand}" />
+        <KeyBinding Key="F12" Command="{Binding CloneWindowCommand}" />
     </Window.InputBindings>
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Vertical" MouseDown="Grid_MouseDown">
@@ -62,7 +63,7 @@
                     </TextBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,10,0" Grid.Column="2">
-                    <Button Command="{Binding CloneWindowCommand}">🔍</Button>
+                    <Button Command="{Binding CloneWindowCommand}" ToolTip="Open Clone [F12]">🔍</Button>
                     <Button Command="{Binding CloseCommand}">❌</Button>
                 </StackPanel>
             </Grid>
