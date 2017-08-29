@@ -21,6 +21,8 @@ namespace Hellosam.Net.TransparentPaint
         [DataMember]
         public double RatioWidth;
         [DataMember]
+        public double PenWidth;
+        [DataMember]
         public int Port;
         [DataMember]
         public bool AlwaysOnTop;
@@ -35,6 +37,7 @@ namespace Hellosam.Net.TransparentPaint
             Width = vm.Width;
             RatioHeight = vm.RatioHeight;
             RatioWidth = vm.RatioWidth;
+            PenWidth = vm.PenWidth;
             Port = vm.Port;
             AlwaysOnTop = vm.AlwaysOnTop;
             EnableSnap = vm.EnableSnap;
@@ -43,10 +46,22 @@ namespace Hellosam.Net.TransparentPaint
 
         public ConfigData()
         {
+            Initialize();
+        }
+
+        [OnDeserializing]
+        private void Deserializing(StreamingContext context)
+        {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             Width = 512;
             Height = 512;
             RatioHeight = 9;
             RatioWidth = 16;
+            PenWidth = 3;
             Port = 8010;
             AlwaysOnTop = true;
         }
@@ -57,6 +72,7 @@ namespace Hellosam.Net.TransparentPaint
             vm.Width = Width;
             vm.RatioHeight = RatioHeight;
             vm.RatioWidth = RatioWidth;
+            vm.PenWidth = PenWidth;
             vm.Port = Port;
             vm.AlwaysOnTop = AlwaysOnTop;
             vm.EnableSnap = EnableSnap;

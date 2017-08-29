@@ -51,6 +51,13 @@ namespace Hellosam.Net.TransparentPaint
             set { Set(ref _ratioWidth, value); }
         }
 
+        double _penWidth;
+        public double PenWidth
+        {
+            get { return _penWidth; }
+            set { Set(ref _penWidth, value); OnPenWidthChanged(); }
+        }
+        
         int _port;
         public int Port
         {
@@ -337,28 +344,36 @@ namespace Hellosam.Net.TransparentPaint
 
         private void OnClearInk()
         {
-            if (_canvas != null)
+            if (Canvas != null)
             {
-                _canvas.Strokes.Clear();
-                Render(_canvas);
-                Render(_canvas);
+                Canvas.Strokes.Clear();
+                Render(Canvas);
+                Render(Canvas);
             }
         }
 
         private void OnUndo()
         {
-            if (_canvas != null && _canvas.Strokes.Count > 0)
+            if (Canvas != null && Canvas.Strokes.Count > 0)
             {
-                _canvas.Strokes.RemoveAt(_canvas.Strokes.Count - 1);
-                Render(_canvas);
-                Render(_canvas);
+                Canvas.Strokes.RemoveAt(Canvas.Strokes.Count - 1);
+                Render(Canvas);
+                Render(Canvas);
             }
         }
 
         private void OnSetColor(Color color)
         {
-            if (_canvas != null)
-                _canvas.DefaultDrawingAttributes.Color = color;
+            if (Canvas != null)
+                Canvas.DefaultDrawingAttributes.Color = color;
+        }
+        private void OnPenWidthChanged()
+        {
+            if (Canvas != null && PenWidth > 0 && PenWidth < 1000)
+            {
+                Canvas.DefaultDrawingAttributes.Height = PenWidth;
+                Canvas.DefaultDrawingAttributes.Width = PenWidth;
+            }
         }
 
         public void Render(UIElement element)

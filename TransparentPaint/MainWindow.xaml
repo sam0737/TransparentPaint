@@ -85,7 +85,9 @@
                     <Button Command="{Binding SetColorCommand}" CommandParameter="{x:Static Colors.White}" Height="30" Width="30" Background="White">🖊️</Button>
                     <Button Command="{Binding SetColorCommand}" CommandParameter="{x:Static Colors.Gray}" Height="30" Width="30" Background="Gray">🖊️</Button>
                     <Button Command="{Binding SetColorCommand}" CommandParameter="{x:Static Colors.Black}" Height="30" Width="30" Background="Black" Foreground="White">🖊️</Button>
-                    <Button Command="{Binding UndoCommand}" Height="30" Width="30" Margin="10,0,10,0" ToolTip="Undo [F2]">⎌</Button>
+                    <TextBox Text="{Binding PenWidth, UpdateSourceTrigger=PropertyChanged}" Width="20" VerticalAlignment="Center" Margin="3,0,0,0">
+                    </TextBox>
+                    <Button Command="{Binding UndoCommand}" Height="30" Width="30" Margin="15,0,10,0" ToolTip="Undo [F2]">⎌</Button>
                 </StackPanel>
                 <TextBlock VerticalAlignment="Center" Margin="10,0,10,0" Grid.Column="2">     
                     <TextBlock BaselineOffset="17">Port</TextBlock>
