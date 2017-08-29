@@ -1,0 +1,18 @@
+﻿<Window x:Class="Hellosam.Net.TransparentPaint.CloneWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Hellosam.Net.TransparentPaint"        
+        d:DataContext="{d:DesignInstance Type=local:MainViewModel, IsDesignTimeCreatable=True}"
+        mc:Ignorable="d"
+        WindowStyle="SingleBorderWindow"
+        AllowsTransparency="False"
+        Background="#00FF00"
+        Title="TransparentPaint: Clone" SizeToContent="WidthAndHeight">
+    <Grid Height="{Binding Height}" Width="{Binding Width}">
+        <Grid.Background>
+            <VisualBrush Visual="{Binding Canvas}"></VisualBrush>
+        </Grid.Background>
+    </Grid>
+</Window>
