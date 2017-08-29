@@ -24,7 +24,7 @@ namespace Hellosam.Net.TransparentPaint
         {
             InitializeComponent();
             DataContext = _vm = new MainViewModel();
-            Config.CreateFromSystemOrDefault().AppliesTo(_vm);
+            _vm.LoadConfig(Config.CreateFromSystemOrDefault());
             _vm.Close += _vm_Close;
 
             _vm.SetCanvas(Canvas);

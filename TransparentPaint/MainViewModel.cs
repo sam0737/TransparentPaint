@@ -21,6 +21,8 @@ namespace Hellosam.Net.TransparentPaint
 {
     class MainViewModel : ViewModelBase
     {
+        private static readonly log4net.ILog Logger = log4net.LogManager.GetLogger(typeof(MainViewModel));
+
         double _height;
         public double Height
         {
@@ -130,10 +132,15 @@ namespace Hellosam.Net.TransparentPaint
 
             if (!IsInDesignMode)
             {
-                OnRestart();
                 Application.Current.Dispatcher.InvokeAsync(RenderTask, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
                 OnCloneWindow();
             }
+        }
+
+        public void LoadConfig(ConfigData config)
+        {
+            config.AppliesTo(this);
+            OnRestart();
         }
 
         private void OnToggleSnap()
@@ -272,26 +279,42 @@ namespace Hellosam.Net.TransparentPaint
             {
                 if (localEra != _serverEra)
                     return;
+
+                Logger.Debug("Request to restart HTTP server");
                 IsServerActive = false;
                 if (_server != null)
                 {
+                    Logger.Debug("Stopping the old server instance");
                     try
                     {
                         await _server.Stop();
                     }
-                    catch (Exception) { }
+                    catch (Exception)
+                    {
+                        // Exceptions would have been logged below
+                    }
+                    _server = null;
+                    Logger.Debug("The old server instance is stopped");
                 }
                 if (Port != 0)
                 {
                     _server = new MjpegStreamingServer();
-                    try
-                    {
-                        IsServerActive = true;
+                    IsServerActive = true;                    
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                        _server.Start(Port).ContinueWith((task) => { IsServerActive = false; });
+                    _server.Start(Port).ContinueWith(async (task) =>
+                    {
+                        _server = null;
+                        IsServerActive = false;
+                        try
+                        {
+                            await task;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error("HTTP server crashed", ex);
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    }
-                    catch (Exception) { }
                 }
             }
         }
@@ -299,13 +322,21 @@ namespace Hellosam.Net.TransparentPaint
         private void OnClearInk()
         {
             if (_canvas != null)
+            {
                 _canvas.Strokes.Clear();
+                Render(_canvas);
+                Render(_canvas);
+            }
         }
 
         private void OnUndo()
         {
             if (_canvas != null && _canvas.Strokes.Count > 0)
+            {
                 _canvas.Strokes.RemoveAt(_canvas.Strokes.Count - 1);
+                Render(_canvas);
+                Render(_canvas);
+            }
         }
 
         private void OnSetColor(Color color)
@@ -336,7 +367,7 @@ namespace Hellosam.Net.TransparentPaint
                 using (var ms = new System.IO.MemoryStream())
                 {
                     pngEncoder.Save(ms);
-                    _server.Publish(new BinaryPayload("image/png", ms.ToArray()));
+                    _server?.Publish(new BinaryPayload("image/png", ms.ToArray()));
                 }
             }
         }

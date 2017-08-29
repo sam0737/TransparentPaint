@@ -21,6 +21,8 @@ namespace Hellosam.Net.TransparentPaint
 
     abstract class StreamingServer
     {
+        private static readonly log4net.ILog Logger = log4net.LogManager.GetLogger(typeof(StreamingServer));
+
         CancellationTokenSource _cts;
         BroadcastBlock<StreamingPayload> _rootBuffer = new BroadcastBlock<StreamingPayload>(x => x);
         private Task _serverTask;
@@ -57,7 +59,7 @@ namespace Hellosam.Net.TransparentPaint
                 server.Bind(new IPEndPoint(IPAddress.Any, port));
                 server.Listen(10);
 
-                Debug.WriteLine(string.Format("Server started on port {0}.", port));
+                Logger.InfoFormat("Server started on port {0}.", port);
 
                 while (true)
                 {
@@ -66,7 +68,8 @@ namespace Hellosam.Net.TransparentPaint
                     var task = await Task.WhenAny(serverTask.Concat(clientTasks));
                     if (task == serverTask[1])
                     {
-                        var client = await (Task<Socket>)serverTask[1];
+                        Socket client;
+                            client = await (Task<Socket>)serverTask[1];
                         serverTask[1] = null;
                         var t = Task.Run(() => ClientThread(client, ct));
                         clientTasks.Add(t);
@@ -84,7 +87,16 @@ namespace Hellosam.Net.TransparentPaint
                     }
                 }
             }
+
             // Clean up
+            Logger.Debug("HTTP server cleaning up");
+
+            _cts.Cancel(); // To be safe
+
+            if (serverTask[1] != null)
+                try { await serverTask[1]; }
+                catch (ObjectDisposedException) { }
+            
             await Task.WhenAll(clientTasks);
             foreach (var t in clientTasks)
             {
@@ -99,31 +111,37 @@ namespace Hellosam.Net.TransparentPaint
         {
             var bufferBlock = new BufferBlock<StreamingPayload>(new DataflowBlockOptions { BoundedCapacity = 1 });
             using (_rootBuffer.LinkTo(bufferBlock))
-            using (var ms = new NetworkStream(client, true))
+            using (var ns = new NetworkStream(client, true))
             {
                 try
                 {
-                    await WriteHeader(ms);
+                    await WriteHeader(ns);
                     StreamingPayload payload;
                     // First frame
                     if (_rootBuffer.TryReceive(out payload))
                     {
-                        await payload.WriteToStream(ms);
-                        await ms.FlushAsync();
+                        await payload.WriteToStream(ns);
+                        await ns.FlushAsync();
                     }
 
                     while (true)
                     {
                         payload = await bufferBlock.ReceiveAsync(ct);
-                        await payload.WriteToStream(ms);
-                        await ms.FlushAsync();
+                        await payload.WriteToStream(ns);
+                        await ns.FlushAsync();
                     }
                 }
                 catch (IOException)
                 {
+                    // The client might went away at anytime
+                    return;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The client might went away at anytime
                     return;
                 }
             }
-        }
+        }        
     }
 }

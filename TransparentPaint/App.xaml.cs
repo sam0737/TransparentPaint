@@ -13,5 +13,22 @@ namespace Hellosam.Net.TransparentPrint
     /// </summary>
     public partial class App : Application
     {
+        private static readonly log4net.ILog Logger = log4net.LogManager.GetLogger(typeof(App));
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            Logger.Info("--- Starting ---");
+            Logger.InfoFormat("Version:{0}", System.Windows.Forms.Application.ProductVersion);
+
+            AppDomain.CurrentDomain.UnhandledException += new
+                UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+
+            base.OnStartup(e);
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Logger.Fatal("Unhandled Exception", e.ExceptionObject as Exception);
+        }
     }
 }
