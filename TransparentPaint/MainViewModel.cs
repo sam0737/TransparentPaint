@@ -214,7 +214,7 @@ namespace Hellosam.Net.TransparentPaint
                     StringBuilder strbTitle = new StringBuilder(255);
                     int nLength = User32.GetWindowText(hWnd, strbTitle, strbTitle.Capacity + 1);
                     string strTitle = strbTitle.ToString();
-                    if (!string.IsNullOrEmpty(strTitle) && strTitle.IndexOf(SnapName) > 0)
+                    if (!string.IsNullOrEmpty(strTitle) && strTitle.IndexOf(SnapName) >= 0)
                     {
                         matchingHWnd = hWnd;
                         return false;
