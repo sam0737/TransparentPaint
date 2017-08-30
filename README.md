@@ -2,6 +2,8 @@
 
 [Telestrator][1] (video marker) designed for [OBS][2]. 
 
+![demo](https://raw.githubusercontent.com/sam0737/TransparentPaint/master/docs/demo.gif)
+
 TransparentPaint accepts stylus(pen)/touch/mouse drawing on a transparent canvas, snapped to a particular window (e.g. a OBS source projector). 
 The drawing output is available for HTTP streaming and can be included by OBS BrowserSource. The output can also be displayed on a chroma-keyed window.
 
@@ -21,12 +23,15 @@ Just copy, unzip and run.
 4. Use mouse/stylus/touch to draw something on `TransparentPaint`
 5. Some strokes should appear on the chrome.
 
+![01_test](https://raw.githubusercontent.com/sam0737/TransparentPaint/master/docs/01_test.png)
+
 ## Use with OBS
 
 1. Launch `OBS`
 2. Stream the strokes to OBS
    1. Create a new BrowserSource
       * Untick local file, URL: http://127.0.0.1:8010
+![02_obs_browsersource](https://raw.githubusercontent.com/sam0737/TransparentPaint/master/docs/02_obs_browsersource.png)
 3. To overlay the `TransparentPaint` over the video
    1. Right click on your video source, then select `Windowed Projector`
    2. In the `TransparentPaint`, in the text box near the padlock icon, type `Projector`
@@ -41,7 +46,7 @@ Just copy, unzip and run.
    * F2: Undo
    * F6: Snap toggle
 * The `Zoom` button creates a cloned window with Green chroma key, which might be useful in some sistuation.
-* Config and logs are saved at `%LOCALAPPDATA%\Hellosam.Net.TransparentPaint`
+* Config and logs are saved at `%LOCALAPPDATA%\TransparentPaint`
 * Tested with Windows 10 + OBS 20.0.1
 
 # License

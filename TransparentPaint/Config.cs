@@ -88,7 +88,7 @@ namespace Hellosam.Net.TransparentPaint
         {
             get
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Hellosam.Net.TransparentPaint");
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TransparentPaint");
             }
         }
 
