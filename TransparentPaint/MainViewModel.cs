@@ -64,7 +64,7 @@ namespace Hellosam.Net.TransparentPaint
             get { return _port; }
             set { Set(ref _port, value); }
         }
-
+        
         bool _alwaysOnTop;
         public bool AlwaysOnTop
         {
@@ -169,6 +169,14 @@ namespace Hellosam.Net.TransparentPaint
             }
         }
 
+        Vector _dragOffset = new Vector();
+        internal void ReportWindowDrag(Vector offset)
+        {
+            if (IsSnapped)
+            {
+                _dragOffset += offset;
+            }
+        }
         private async Task SnapTask(CancellationToken ct)
         {
             try
@@ -186,7 +194,7 @@ namespace Hellosam.Net.TransparentPaint
                 IsSnapped = false;
             }
         }
-
+        
         private bool TryToSnap()
         {
             if (string.IsNullOrEmpty(SnapName))
@@ -218,13 +226,25 @@ namespace Hellosam.Net.TransparentPaint
                 return false;
 
             User32.RECT rect;
-            User32.POINT point = new User32.POINT { X = 0, Y = 0 };
+            User32.POINT point = new User32.POINT();
             if (!User32.GetClientRect(matchingHWnd, out rect) || !User32.ClientToScreen(matchingHWnd, out point))
                 return false;
+
             if (rect.Right - rect.Left <= 0 || rect.Bottom - rect.Top <= 0)
                 return false;
-            var dpiRatio = (double) User32.GetDpiRatio(matchingHWnd);
 
+            if (_dragOffset.Length > 0)
+            {
+                User32.RECT windowRect;
+                User32.GetWindowRect(matchingHWnd, out windowRect);
+                User32.SetWindowPosition(matchingHWnd, (int)(windowRect.Left + _dragOffset.X), (int)(windowRect.Top + _dragOffset.Y));
+                _dragOffset.X = 0;
+                _dragOffset.Y = 0;
+                point = new User32.POINT();
+                User32.ClientToScreen(matchingHWnd, out point);
+            }
+
+            var dpiRatio = (double)User32.GetDpiRatio(matchingHWnd);
             var offset = Canvas.TranslatePoint(new Point(0, 0), w);
 
             Rect goal = new Rect(point.X, point.Y, rect.Right - rect.Left + 1, rect.Bottom - rect.Top + 1);
@@ -436,11 +456,11 @@ namespace Hellosam.Net.TransparentPaint
         {
             while (true)
             {
-                var element = await _renderQueue.ReceiveAsync();
-                Rect rect = new Rect(element.RenderSize);
+                var canvas = await _renderQueue.ReceiveAsync();
+                Rect rect = new Rect(canvas.RenderSize);
                 RenderTargetBitmap rtb = new RenderTargetBitmap((int)rect.Right,
                   (int)rect.Bottom, 96d, 96d, System.Windows.Media.PixelFormats.Default);
-                rtb.Render(element);
+                rtb.Render(canvas);
 
                 //endcode as PNG
                 BitmapEncoder pngEncoder = new PngBitmapEncoder();

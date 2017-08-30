@@ -42,10 +42,23 @@ namespace Hellosam.Net.TransparentPaint
             Close();
         }
 
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        Point? dragStart = null;
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!_vm.IsSnapped)
-                this.DragMove();
+            dragStart = PointToScreen(new Point());
+            this.DragMove();
         }
+
+        private void TitleBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (dragStart.HasValue)
+            {
+                var dragEnd = PointToScreen(new Point());
+                var offset = dragEnd - dragStart.Value;
+                dragStart = null;
+                _vm.ReportWindowDrag(offset);
+            }
+        }
+        
     }
 }

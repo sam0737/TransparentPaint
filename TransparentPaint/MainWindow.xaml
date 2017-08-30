@@ -18,7 +18,7 @@
         <KeyBinding Key="F12" Command="{Binding CloneWindowCommand}" />
     </Window.InputBindings>
     <StackPanel Orientation="Vertical">
-        <StackPanel Orientation="Vertical" MouseDown="Grid_MouseDown">
+        <StackPanel Orientation="Vertical" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" MouseLeftButtonUp="TitleBar_MouseLeftButtonUp">
             <StackPanel.Style>
                 <Style TargetType="StackPanel">
                     <Setter Property="Background" Value="{x:Static SystemColors.ActiveCaptionBrush}" />

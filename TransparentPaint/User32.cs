@@ -64,10 +64,14 @@ namespace Hellosam.Net.TransparentPaint
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool ClientToScreen(IntPtr hWnd, out POINT lpPoint);
-        
+
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -145,11 +149,18 @@ namespace Hellosam.Net.TransparentPaint
         }
 
         const uint SWP_NOACTIVATE = 0x0010;
+        const uint SWP_NOZORDER = 0x0004;
         const uint SWP_NOMOVE = 0x0002;
+        const uint SWP_NOSIZE = 0x0001;
         public static bool SendToBottom(Window window)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
-            return SetWindowPos(hwnd, new IntPtr(1), 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE);
+            return SetWindowPos(hwnd, new IntPtr(1), 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+        }
+        
+        public static bool SetWindowPosition(IntPtr hwnd, int x, int y)
+        {
+            return SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
         }
     }
 }
