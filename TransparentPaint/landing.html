@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <img id="img" src="/img" style="width: 100%; height: 100%">
+    <script>
+        var img = document.getElementById("img");
+        var tag = ""
+        var pong = "";
+
+        function createImage() {
+            tag = Math.random().toString(36).replace(/[^a-z0-9]+/g, '');
+            img.src = "/img/" + tag;
+            setTimeout(ping, 2500);
+        }
+
+        function ping() {
+            var _tag = tag;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    if (xmlHttp.responseText == "live") {
+                        pong = _tag;
+                    }
+                }
+            }
+            pong = "";
+            xmlHttp.open("GET", "/ping/img" + _tag);
+            xmlHttp.send();
+            setTimeout(function () {
+                if (pong == tag) {
+                    ping();
+                } else {
+                    createImage();
+                }
+            }, 2500);
+        }
+        // Create the first image
+        createImage();
+    </script>
+</body>
+</html>

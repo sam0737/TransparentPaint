@@ -42,18 +42,6 @@ namespace Hellosam.Net.TransparentPaint
             Close();
         }
 
-        private void Canvas_StrokeCollected(object sender, System.Windows.Controls.InkCanvasStrokeCollectedEventArgs e)
-        {
-            _vm.Render((UIElement)sender);
-            _vm.Render((UIElement)sender);
-        }
-
-        private void Canvas_StrokeErased(object sender, RoutedEventArgs e)
-        {
-            _vm.Render((UIElement)sender);
-            _vm.Render((UIElement)sender);
-        }
-
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (!_vm.IsSnapped)

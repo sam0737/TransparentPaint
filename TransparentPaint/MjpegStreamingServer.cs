@@ -4,7 +4,10 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,47 +15,82 @@ namespace Hellosam.Net.TransparentPaint
 {
     class MjpegStreamingServer : StreamingServer
     {
+        protected override StreamingServerWorker CreateWorker(Socket client)
+        {
+            return new MjpegStreamingServerWorker(this, client, Cts.Token);
+        }
+
+        public bool AnyClientWithTag(string tag)
+        {
+            return ClientTasks.Any(c => ((MjpegStreamingServerWorker)c.Value).Tag == tag);
+        }
+    }
+
+    class MjpegStreamingServerWorker : StreamingServerWorker
+    {
+        public string Tag { get; private set; }
+
+        public MjpegStreamingServerWorker(StreamingServer server, Socket client, CancellationToken ct)
+            :base(server, client, ct)
+        {
+        }
+
         public static readonly string BOUNDARY = "--B-" + Guid.NewGuid().ToString();
 
-        protected override async Task<bool> HandleRequest(Stream ns, HttpRequest request)
+        protected override async Task<bool> HandleRequest(HttpRequest request)
         {
-            if (request.DecodedUri != null && request.DecodedUri.LocalPath == "/html")
+            if (request.DecodedUri == null)
             {
-                var content =
-@"<!DOCTYPE html>
-<head><meta charset=""UTF-8""></head>
-<body><img src=""/"" style=""width: 100%; height: 100%""></body></html>
-";
-                var contentBytes = Encoding.UTF8.GetBytes(content);
-                var header =
-                    "HTTP/1.1 200 OK\r\n" +
-                    "Cache-Control: no-cache\r\n" +
-                    "Content-Length: " + contentBytes.Length.ToString(CultureInfo.InvariantCulture) + "\r\n" +
-                    "Content-Type: text/html\r\n\r\n";
+                await SendTextRensponse("404 Not Found", "text/plain", "Not Found");
+                return true;
+            }
 
-                var headerBytes = Encoding.ASCII.GetBytes(header);
+            if (request.DecodedUri.LocalPath.StartsWith("/img/", StringComparison.Ordinal) ||
+                request.DecodedUri.LocalPath == "/img")
+            {
+                Tag = new Regex("[^a-zA-Z0-9_]").Replace(request.DecodedUri.LocalPath, string.Empty);
+                return false;
+            }
 
-                using (var timeout = new CancellationTokenSource(3000))
+            if (request.DecodedUri.LocalPath.StartsWith("/ping/", StringComparison.Ordinal))
+            {
+                var tag = request.DecodedUri.LocalPath.Substring("/ping/".Length);
+                if (((MjpegStreamingServer)Server).AnyClientWithTag(tag))
                 {
-                    timeout.Token.Register(() => ns.Close());
-                    await ns.WriteAsync(headerBytes, 0, headerBytes.Length);
-                    await ns.WriteAsync(contentBytes, 0, contentBytes.Length);
+                    await SendOkTextRensponse("text/plain", "live");
+                } else
+                {
+                    await SendOkTextRensponse("text/plain", "dead");
+                }
+                return false;
+            }
+
+            if (request.DecodedUri.LocalPath == "/")
+            {
+                using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("Hellosam.Net.TransparentPaint.landing.html"))
+                using (var sr = new StreamReader(s, Encoding.UTF8, false))
+                {
+                    await SendOkTextRensponse("text/html", sr.ReadToEnd());
                 }
                 return true;
             }
-            return false;
+            await SendTextRensponse("404 Not Found", "text/plain", "Not Found");
+            return true;
         }
-
-        protected override async Task WriteStreamingHeader(Stream ns)
+        
+        protected override async Task WriteStreamingHeader()
         {
-            var b = Encoding.ASCII.GetBytes(
+            using (var timeout = new CancellationTokenSource(3000))
+            {
+                var b = Encoding.ASCII.GetBytes(
                     "HTTP/1.1 200 OK\r\n" +
                     "Content-Type: multipart/x-mixed-replace; boundary=" +
                     BOUNDARY +
                     "\r\n"
                  );
-            await ns.WriteAsync(b, 0, b.Length);
-            await ns.FlushAsync();
+                await Ns.WriteAsync(b, 0, b.Length);
+                await Ns.FlushAsync();
+            }
         }
     }
 
@@ -72,7 +110,7 @@ namespace Hellosam.Net.TransparentPaint
 
                 var header =
                     "\r\n" +
-                    MjpegStreamingServer.BOUNDARY + "\r\n" +
+                    MjpegStreamingServerWorker.BOUNDARY + "\r\n" +
                     "Content-Type: image/jpeg\r\n" +
                     "Content-Length: " + buf.Length.ToString(CultureInfo.InvariantCulture) +
                     "\r\n\r\n";
@@ -95,18 +133,15 @@ namespace Hellosam.Net.TransparentPaint
 
         public override async Task WriteToStream(Stream ms)
         {
-            using (var buf = new MemoryStream())
-            {
-                var t =
-                    "\r\n" +
-                    MjpegStreamingServer.BOUNDARY + "\r\n" +
-                    "Content-Type: image/jpeg\r\n" +
-                    "Content-Length: " + _payload.Length.ToString(CultureInfo.InvariantCulture) +
-                    "\r\n\r\n";
-                var tb = Encoding.ASCII.GetBytes(t);
-                await ms.WriteAsync(tb, 0, tb.Length);
-                await ms.WriteAsync(_payload, 0, _payload.Length);
-            }
+            var t =
+                "\r\n" +
+                MjpegStreamingServerWorker.BOUNDARY + "\r\n" +
+                "Content-Type: " + _mime + "\r\n" +
+                "Content-Length: " + _payload.Length.ToString(CultureInfo.InvariantCulture) +
+                "\r\n\r\n";
+            var tb = Encoding.ASCII.GetBytes(t);
+            await ms.WriteAsync(tb, 0, tb.Length);
+            await ms.WriteAsync(_payload, 0, _payload.Length);
         }
     }
 }

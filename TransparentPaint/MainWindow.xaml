@@ -109,7 +109,7 @@
         <Border BorderBrush="Red" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top">
             <InkCanvas
                     Width="{Binding Width}" Height="{Binding Height}"         
-                    Name="Canvas" StrokeCollected="Canvas_StrokeCollected" StrokeErased="Canvas_StrokeErased">
+                    Name="Canvas">
                 <InkCanvas.DefaultDrawingAttributes>
                     <DrawingAttributes Color="Red" Height="3" Width="3" IsHighlighter="False" />
                 </InkCanvas.DefaultDrawingAttributes>

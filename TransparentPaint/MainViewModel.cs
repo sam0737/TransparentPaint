@@ -264,11 +264,64 @@ namespace Hellosam.Net.TransparentPaint
             canvas.MouseDown += Canvas_MouseDown;
             canvas.MouseMove += Canvas_MouseMove;
             canvas.MouseUp += Canvas_MouseUp;
+
+            canvas.TouchDown += Canvas_TouchDown;
+            canvas.TouchMove += Canvas_TouchMove;
+            canvas.TouchUp += Canvas_TouchUp;
+
+            canvas.StylusDown += Canvas_StylusDown;
+            canvas.StylusMove += Canvas_StylusMove;
+            canvas.StylusUp += Canvas_StylusUp;
+        }
+
+        private void Canvas_TouchDown(object sender, TouchEventArgs e)
+        {
+            e.TouchDevice.Capture(Canvas);
+            Render(Canvas);
+        }
+        
+        private void Canvas_TouchUp(object sender, TouchEventArgs e)
+        {
+            e.TouchDevice.Capture(null);
+        }
+
+        private void Canvas_TouchMove(object sender, TouchEventArgs e)
+        {
+            if (e.TouchDevice.Captured == Canvas)
+                Render(Canvas);
+        }
+
+        private IEnumerable<Visual> XX(Visual v)
+        {
+            var t = VisualTreeHelper.GetChildrenCount(v);
+            for (var i = 0; i < t; i++)
+            {
+                var c = (Visual)VisualTreeHelper.GetChild(v, i);
+                foreach (var x in XX(c)) yield return x;
+            }
+            yield return v;
+        }
+
+        private void Canvas_StylusDown(object sender, StylusDownEventArgs e)
+        {
+            e.StylusDevice.Capture(Canvas);
+            Render(Canvas);
+        }
+
+        private void Canvas_StylusUp(object sender, StylusEventArgs e)
+        {
+            e.StylusDevice.Capture(null);
+        }
+
+        private void Canvas_StylusMove(object sender, StylusEventArgs e)
+        {
+            if (e.StylusDevice.Captured == Canvas)
+                Render(Canvas);
         }
         
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            e.MouseDevice.Capture((UIElement)sender);
+            e.MouseDevice.Capture(Canvas);
             Render(Canvas);
         }
         private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
@@ -278,10 +331,8 @@ namespace Hellosam.Net.TransparentPaint
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.MouseDevice.Captured == (UIElement)sender)
-            {
+            if (e.MouseDevice.Captured == Canvas)
                 Render(Canvas);
-            }
         }
 
         private void Canvas_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
