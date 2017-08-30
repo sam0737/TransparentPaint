@@ -1,6 +1,8 @@
 # TransparentPaint
 
-[Telestrator][1] (video marker) designed for [OBS][2]. 
+[Telestrator][1] (video marker) for [OBS][2]. 
+
+配合OBS使用的實況繪圖軟件。
 
 ![demo](https://raw.githubusercontent.com/sam0737/TransparentPaint/master/docs/demo.gif)
 
