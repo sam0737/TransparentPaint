@@ -78,8 +78,20 @@ namespace Hellosam.Net.TransparentPaint
                     var task = await Task.WhenAny(serverTask.Concat(ClientTasks.Keys));
                     if (task == serverTask[1])
                     {
-                        Socket client = await (Task<Socket>)serverTask[1];
-                        serverTask[1] = null;
+                        Socket client = null;
+                        try
+                        {
+                            client = await (Task<Socket>)serverTask[1];
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // Client disconnection? restart
+                            continue;
+                        }
+                        finally
+                        {
+                            serverTask[1] = null;
+                        }
 
                         StreamingServerWorker worker = CreateWorker(client);
                         var t = Task.Run(() => worker.ClientThread());
