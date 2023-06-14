@@ -9,15 +9,15 @@
 TransparentPaint accepts stylus(pen)/touch/mouse drawing on a transparent canvas, snapped to a particular window (e.g. a OBS source projector). 
 The drawing output is available for HTTP streaming and can be included by OBS BrowserSource. The output can also be displayed on a chroma-keyed window.
 
-# Installation
+## Installation
 
 Just copy, unzip and run.
 
 .NET Framework 4.6.1 must be installed first.
 
-# Usage
+## Usage
 
-## Test
+### Test
 
 1. Launch `TransparentPaint`
    * You don't have to allow for firewall access, because we are accessing it locally
@@ -27,7 +27,7 @@ Just copy, unzip and run.
 
 ![01_test](https://raw.githubusercontent.com/sam0737/TransparentPaint/master/docs/01_test.png)
 
-## Use with OBS
+### Use with OBS
 
 1. Launch `OBS`
 2. Stream the strokes to OBS
@@ -41,7 +41,7 @@ Just copy, unzip and run.
    4. The `TransparentPaint` should snap to the your source projector.
 4. Now you can draw with mouse/stylus/touch
 
-# Others
+## Others
 
 * Hotkeys
    * F1: Clear canvas
@@ -51,7 +51,7 @@ Just copy, unzip and run.
 * Config and logs are saved at `%LOCALAPPDATA%\TransparentPaint`
 * Tested with Windows 10 + OBS 20.0.1
 
-# License
+## License
 
 The source code is released under the MIT License.
 
@@ -65,7 +65,7 @@ The binaries include the following libraries, and their licensing terms are:
 * [MvvmLight](https://mvvmlight.codeplex.com/), [MIT](https://mvvmlight.codeplex.com/license)
 
 
-# Known Bugs
+## Known Bugs
 
 * The HTTP streamed output does not include ink currently drawing by stylus/touch.
   
@@ -76,3 +76,30 @@ The binaries include the following libraries, and their licensing terms are:
 [1]: https://en.wikipedia.org/wiki/Telestrator
 [2]: https://obsproject.com/
 [10]: https://stackoverflow.com/questions/45963928/creating-bitmap-of-inkcanvas-that-includes-stroke-from-dynamicrenderer-drawn-by
+
+
+## Dependencies
+
+* [.Net framework 4.6.1](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net461-developer-pack-offline-installer) - deprecated / end of life, but can be still installed
+* NuGet packages
+
+```
+Id                                  Versions                                 ProjectName                                                                                                                                        
+--                                  --------                                 -----------                                                                                                                                        
+CommonServiceLocator                {1.3}                                    TransparentPaint                                                                                                                                   
+log4net                             {2.0.8}                                  TransparentPaint                                                                                                                                   
+Microsoft.Tpl.Dataflow              {4.5.24}                                 TransparentPaint                                                                                                                                   
+MvvmLight                           {5.3.0.0}                                TransparentPaint                                                                                                                                   
+MvvmLightLibs                       {5.3.0.0}                                TransparentPaint
+```
+
+## Build
+
+* build environment capable of building C# solutions (tested on Microsoft Visual Studio Community 2019 Version 16.11.27)
+* make sure that NuGet.org is available in your nuget sources (add nuget source pointing to `https://api.nuget.org/v3/index.json` so that Nuget can restore the dependencies packages in case it's not)
+
+![visual studio setting](docs/nuget.png)
+
+Once the above is set and available, the solution should be buildable inside Visual Studio and the resulting Exe (goes to `TransparentPaint\bin\Debug\TransparentPaint.exe`) won't be complained about by your windows defender.
+
+Happy drawing!
